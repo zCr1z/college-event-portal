@@ -1,0 +1,510 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusConnect | College Event Portal</title>
+  <style>
+    :root {
+      --navy: #14213d;
+      --blue: #2563eb;
+      --bg: #f3f6fc;
+      --border: #dbe3ef;
+      --muted: #64748b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #1f2937;
+      background: var(--bg);
+      line-height: 1.55;
+    }
+
+    header {
+      padding: 20px 6%;
+      background: var(--navy);
+      color: white;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    header h1 { margin: 0; }
+    header p { margin: 4px 0 0; color: #cbd5e1; }
+
+    nav { display: flex; gap: 15px; flex-wrap: wrap; }
+    nav a { color: white; text-decoration: none; font-weight: bold; }
+
+    .hero {
+      padding: 45px 6%;
+      color: white;
+      background: linear-gradient(120deg, #1d4ed8, #4338ca);
+    }
+
+    .hero h2 { font-size: clamp(28px, 4vw, 42px); margin: 0 0 10px; }
+    .hero p { max-width: 700px; }
+
+    main { max-width: 1200px; margin: auto; padding: 28px 18px 55px; }
+    section { margin-bottom: 35px; }
+
+    .toolbar, .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    input, select, textarea, button {
+      font: inherit;
+      padding: 11px 12px;
+      border-radius: 8px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: white;
+    }
+
+    textarea { min-height: 90px; resize: vertical; }
+    button { cursor: pointer; border: 0; font-weight: bold; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .primary { background: var(--blue); color: white; }
+    .secondary { background: white; color: var(--navy); }
+
+    .event-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+      gap: 18px;
+    }
+
+    .card, .panel {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 4px 15px #14213d0a;
+    }
+
+    .card h3 { margin: 10px 0; }
+    .tag {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1d4ed8;
+      padding: 4px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .muted { color: var(--muted); }
+    .event-meta p { margin: 5px 0; font-size: 14px; }
+
+    .status {
+      padding: 12px;
+      border-radius: 8px;
+      background: #ecfdf5;
+      color: #166534;
+      margin-top: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .error { background: #fef2f2; color: #b91c1c; }
+    .empty { padding: 20px; text-align: center; color: var(--muted); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 11px; border-bottom: 1px solid var(--border); text-align: left; }
+    th { background: #eff6ff; }
+
+    footer {
+      text-align: center;
+      padding: 22px;
+      background: var(--navy);
+      color: #cbd5e1;
+    }
+
+    @media (max-width: 600px) {
+      header, .hero { padding-left: 20px; padding-right: 20px; }
+      main { padding-left: 12px; padding-right: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-row">
+      <div>
+        <h1>CampusConnect</h1>
+        <p>Your campus. Your events. Your experience.</p>
+      </div>
+      <nav>
+        <a href="#events">Events</a>
+        <a href="#register">Register</a>
+        <a href="#status">My Status</a>
+        <a href="#faculty">Faculty</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="hero">
+    <h2>Discover what's happening on campus.</h2>
+    <p>
+      Explore technical workshops, hackathons, cultural festivals and
+      competitions. Find an event, reserve your place and get involved.
+    </p>
+    <a href="#events"><button class="secondary">Explore Events</button></a>
+  </div>
+
+  <main>
+    <section id="events">
+      <h2>Upcoming College Events</h2>
+      <p class="muted">Search by event or venue and filter by category.</p>
+
+      <div class="toolbar">
+        <input id="search" type="search" placeholder="Search events or venues">
+        <select id="category">
+          <option value="All">All categories</option>
+          <option value="Technical">Technical</option>
+          <option value="Cultural">Cultural</option>
+          <option value="Workshop">Workshop</option>
+          <option value="Competition">Competition</option>
+        </select>
+      </div>
+      <div id="eventGrid" class="event-grid"></div>
+    </section>
+
+    <section id="register">
+      <h2>Student Registration</h2>
+      <div class="panel">
+        <p class="muted">Enter your details and select an event.</p>
+        <form id="registrationForm">
+          <div class="form-grid">
+            <input id="studentName" required maxlength="80" placeholder="Full name">
+            <input id="regNo" required maxlength="30" placeholder="Registration number">
+            <input id="department" required maxlength="80" placeholder="Department">
+            <input id="email" type="email" required maxlength="120" placeholder="College email">
+            <select id="eventSelect" required>
+              <option value="">Select an event</option>
+            </select>
+          </div>
+          <button class="primary" type="submit">Register for Event</button>
+          <div id="registrationMessage" aria-live="polite"></div>
+        </form>
+      </div>
+    </section>
+
+    <section id="status">
+      <h2>Check Registration Status</h2>
+      <div class="panel">
+        <form id="statusForm">
+          <div class="toolbar">
+            <input id="statusRegNo" required placeholder="Registration number">
+            <button class="primary" type="submit">Check Status</button>
+          </div>
+        </form>
+        <div id="statusResult" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section id="faculty">
+      <h2>Faculty Coordinator Panel</h2>
+      <div class="panel">
+        <p class="muted">
+          Demonstration interface for event creation, participant limits and
+          registration monitoring. This static version has no real login.
+        </p>
+        <form id="eventForm">
+          <div class="form-grid">
+            <input id="newTitle" required maxlength="100" placeholder="Event title">
+            <select id="newCategory" required>
+              <option value="Technical">Technical</option>
+              <option value="Cultural">Cultural</option>
+              <option value="Workshop">Workshop</option>
+              <option value="Competition">Competition</option>
+            </select>
+            <input id="newDate" type="date" required>
+            <input id="newTime" type="time" required>
+            <input id="newVenue" required maxlength="100" placeholder="Venue">
+            <input id="newLimit" type="number" required min="1" max="10000"
+                   placeholder="Participant limit">
+          </div>
+          <textarea id="newDescription" required maxlength="500"
+                    placeholder="Description and registration instructions"></textarea>
+          <br><br>
+          <button class="primary" type="submit">Create Event</button>
+          <div id="eventMessage" aria-live="polite"></div>
+        </form>
+      </div>
+
+      <h3>Registration Monitor</h3>
+      <div class="panel table-wrap">
+        <table>
+          <thead>
+            <tr><th>Event</th><th>Registered</th><th>Capacity</th><th>Available</th></tr>
+          </thead>
+          <tbody id="monitorBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Registration Instructions</h2>
+      <div class="panel">
+        <ol>
+          <li>Browse the available events and choose an event.</li>
+          <li>Enter your name, registration number, department and email.</li>
+          <li>Submit the form and keep the displayed registration reference.</li>
+          <li>Use your registration number to check your registration status.</li>
+          <li>Follow the schedule and instructions shared by the coordinator.</li>
+        </ol>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    CampusConnect — College Event Management Portal
+    <br>HTML, CSS, JavaScript, Docker and Kubernetes
+  </footer>
+
+  <script>
+    const initialEvents = [
+      {
+        id: "EVT001", title: "TechNova Symposium", category: "Technical",
+        date: "2026-11-05", time: "09:30", venue: "Technology Auditorium",
+        limit: 150, description: "Technical talks, project showcases and expert sessions."
+      },
+      {
+        id: "EVT002", title: "CodeSprint Hackathon", category: "Competition",
+        date: "2026-11-08", time: "10:00", venue: "Computing Lab 1",
+        limit: 80, description: "Build innovative software solutions in a team."
+      },
+      {
+        id: "EVT003", title: "Cloud Computing Workshop", category: "Workshop",
+        date: "2026-11-12", time: "14:00", venue: "Seminar Hall A",
+        limit: 60, description: "Learn cloud fundamentals and deployment concepts."
+      },
+      {
+        id: "EVT004", title: "Rhythm Cultural Fest", category: "Cultural",
+        date: "2026-11-15", time: "17:00", venue: "Open Air Theatre",
+        limit: 300, description: "Music, dance and cultural performances."
+      },
+      {
+        id: "EVT005", title: "Robotics Challenge", category: "Competition",
+        date: "2026-11-20", time: "09:00", venue: "Innovation Centre",
+        limit: 50, description: "Design and demonstrate a robotics solution."
+      },
+      {
+        id: "EVT006", title: "Cybersecurity CTF", category: "Technical",
+        date: "2026-11-25", time: "11:00", venue: "Computing Lab 2",
+        limit: 100, description: "Solve cybersecurity challenges in a controlled environment."
+      }
+    ];
+
+    function loadStore(key, fallback) {
+      try {
+        const value = localStorage.getItem(key);
+        return value ? JSON.parse(value) : fallback;
+      } catch {
+        return fallback;
+      }
+    }
+
+    let events = loadStore("cc_events", initialEvents);
+    let registrations = loadStore("cc_registrations", []);
+
+    function saveData() {
+      localStorage.setItem("cc_events", JSON.stringify(events));
+      localStorage.setItem("cc_registrations", JSON.stringify(registrations));
+    }
+
+    function safe(value) {
+      return String(value).replace(/[&<>"']/g, ch => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;",
+        '"': "&quot;", "'": "&#39;"
+      })[ch]);
+    }
+
+    function countFor(eventId) {
+      return registrations.filter(r => r.eventId === eventId).length;
+    }
+
+    function renderMonitor() {
+      const body = document.getElementById("monitorBody");
+      body.innerHTML = "";
+
+      events.forEach(e => {
+        const count = countFor(e.id);
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${safe(e.title)}</td><td>${count}</td>
+          <td>${e.limit}</td><td>${Math.max(0, e.limit - count)}</td>
+        `;
+        body.appendChild(row);
+      });
+    }
+
+    function renderEvents() {
+      const query = document.getElementById("search").value.trim().toLowerCase();
+      const category = document.getElementById("category").value;
+      const filtered = events.filter(e =>
+        (category === "All" || e.category === category) &&
+        (e.title + " " + e.venue + " " + e.description).toLowerCase().includes(query)
+      );
+
+      const grid = document.getElementById("eventGrid");
+      grid.innerHTML = "";
+
+      if (!filtered.length) {
+        grid.innerHTML = '<div class="empty">No matching events found.</div>';
+      }
+
+      filtered.forEach(e => {
+        const count = countFor(e.id);
+        const card = document.createElement("article");
+        card.className = "card";
+        card.innerHTML = `
+          <span class="tag">${safe(e.category)}</span>
+          <h3>${safe(e.title)}</h3>
+          <p>${safe(e.description)}</p>
+          <div class="event-meta">
+            <p><strong>Date:</strong> ${safe(e.date)}</p>
+            <p><strong>Time:</strong> ${safe(e.time)}</p>
+            <p><strong>Venue:</strong> ${safe(e.venue)}</p>
+            <p><strong>Participants:</strong> ${count} / ${e.limit}</p>
+          </div>
+          <button class="primary" data-event="${safe(e.id)}"
+            ${count >= e.limit ? "disabled" : ""}>
+            ${count >= e.limit ? "Event Full" : "Select Event"}
+          </button>
+        `;
+        grid.appendChild(card);
+      });
+
+      grid.querySelectorAll("[data-event]").forEach(button => {
+        button.addEventListener("click", () => {
+          document.getElementById("eventSelect").value = button.dataset.event;
+          document.getElementById("register").scrollIntoView({ behavior: "smooth" });
+        });
+      });
+
+      const select = document.getElementById("eventSelect");
+      const previous = select.value;
+      select.innerHTML = '<option value="">Select an event</option>';
+
+      events.forEach(e => {
+        const option = document.createElement("option");
+        option.value = e.id;
+        option.textContent = `${e.title} (${countFor(e.id)}/${e.limit})`;
+        option.disabled = countFor(e.id) >= e.limit;
+        select.appendChild(option);
+      });
+
+      if (events.some(e => e.id === previous && countFor(e.id) < e.limit)) {
+        select.value = previous;
+      }
+
+      renderMonitor();
+    }
+
+    document.getElementById("search").addEventListener("input", renderEvents);
+    document.getElementById("category").addEventListener("change", renderEvents);
+
+    document.getElementById("registrationForm").addEventListener("submit", event => {
+      event.preventDefault();
+
+      const name = document.getElementById("studentName").value.trim();
+      const regNo = document.getElementById("regNo").value.trim();
+      const department = document.getElementById("department").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const eventId = document.getElementById("eventSelect").value;
+      const selected = events.find(e => e.id === eventId);
+      const message = document.getElementById("registrationMessage");
+
+      const report = (text, error = false) => {
+        message.className = "status" + (error ? " error" : "");
+        message.textContent = text;
+      };
+
+      if (!selected) return report("Select a valid event.", true);
+
+      if (registrations.some(r =>
+        r.regNo.toLowerCase() === regNo.toLowerCase() && r.eventId === eventId
+      )) {
+        return report("You are already registered for this event.", true);
+      }
+
+      if (countFor(eventId) >= selected.limit) {
+        return report("This event has reached its participant limit.", true);
+      }
+
+      const reference = "CC-" + Date.now().toString(36).toUpperCase();
+      registrations.push({
+        reference, name, regNo, department, email, eventId,
+        eventTitle: selected.title, status: "Registered"
+      });
+
+      saveData();
+      renderEvents();
+      report("Registration successful! Reference: " + reference);
+      event.target.reset();
+    });
+
+    document.getElementById("statusForm").addEventListener("submit", event => {
+      event.preventDefault();
+
+      const regNo = document.getElementById("statusRegNo").value.trim();
+      const matches = registrations.filter(r =>
+        r.regNo.toLowerCase() === regNo.toLowerCase()
+      );
+      const result = document.getElementById("statusResult");
+
+      result.className = matches.length ? "status" : "status error";
+      result.textContent = matches.length
+        ? matches.map(r =>
+            `${r.eventTitle} — ${r.status} — Reference: ${r.reference}`
+          ).join(" | ")
+        : "No registrations found for that registration number.";
+    });
+
+    document.getElementById("eventForm").addEventListener("submit", event => {
+      event.preventDefault();
+
+      const title = document.getElementById("newTitle").value.trim();
+      const category = document.getElementById("newCategory").value;
+      const date = document.getElementById("newDate").value;
+      const time = document.getElementById("newTime").value;
+      const venue = document.getElementById("newVenue").value.trim();
+      const limit = Number(document.getElementById("newLimit").value);
+      const description = document.getElementById("newDescription").value.trim();
+      const message = document.getElementById("eventMessage");
+
+      if (!Number.isInteger(limit) || limit < 1 || limit > 10000) {
+        message.className = "status error";
+        message.textContent = "Participant limit must be between 1 and 10000.";
+        return;
+      }
+
+      events.push({
+        id: "EVT-" + Date.now().toString(36).toUpperCase(),
+        title, category, date, time, venue, limit, description
+      });
+
+      saveData();
+      renderEvents();
+      message.className = "status";
+      message.textContent = "Event created successfully.";
+      event.target.reset();
+    });
+
+    renderEvents();
+  </script>
+</body>
+</html>
